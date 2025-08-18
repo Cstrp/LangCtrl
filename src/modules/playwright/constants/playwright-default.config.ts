@@ -1,4 +1,4 @@
-import { ExtendedLaunchOptions } from '../interfaces';
+import { ExtendedLaunchOptions } from '@/types';
 
 export const PLAYWRIGHT_DEFAULT_CONFIG: ExtendedLaunchOptions = {
   headless: true,
@@ -15,4 +15,5 @@ export const PLAYWRIGHT_DEFAULT_CONFIG: ExtendedLaunchOptions = {
   devtools: true,
   wsEndpoint: '',
   userAgent: '',
+  browserName: 'chromium',
 };

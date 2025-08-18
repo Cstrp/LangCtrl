@@ -8,41 +8,61 @@ import * as os from 'os';
 @Injectable()
 export class OllamaInstallerService {
   private readonly logger: Logger = new Logger(OllamaInstallerService.name);
+
   private readonly ollamaApiUrl = 'http://localhost:11434';
   private readonly execAsyncRaw = promisify(exec);
 
-  constructor(private readonly httpService: HttpService) { }
+  constructor(private readonly httpService: HttpService) {}
 
   public async install(model: string): Promise<string | void> {
     this.logger.log(`Initiating installation for model: ${model}`);
 
     if (os.type() !== 'Linux') {
-      this.logger.warn(`Non-Linux OS detected (${os.type()}). Manual installation required.`);
-      throw new Error('Ollama installation is supported only on Linux systems.');
+      this.logger.warn(
+        `Non-Linux OS detected (${os.type()}). Manual installation required.`
+      );
+      throw new Error(
+        'Ollama installation is supported only on Linux systems.'
+      );
     }
 
     try {
-      this.logger.debug(`Checking Ollama service availability at ${this.ollamaApiUrl}`);
+      this.logger.debug(
+        `Checking Ollama service availability at ${this.ollamaApiUrl}`
+      );
 
       const isOllamaRunning = await this.checkOllamaApi();
 
       if (!isOllamaRunning) {
-        this.logger.log('Ollama service not detected. Starting installation...');
+        this.logger.log(
+          'Ollama service not detected. Starting installation...'
+        );
 
         this.logger.debug('Installing Ollama via installation script...');
-        await this.execAsync('curl -sSL https://ollama.com/install.sh | sh', 'Ollama installation');
+        await this.execAsync(
+          'curl -sSL https://ollama.com/install.sh | sh',
+          'Ollama installation'
+        );
 
         this.logger.debug('Enabling Ollama user service...');
-        await this.execAsync('systemctl --user enable ollama', 'Enable Ollama service');
+        await this.execAsync(
+          'systemctl --user enable ollama',
+          'Enable Ollama service'
+        );
 
         this.logger.debug('Starting Ollama user service...');
-        await this.execAsync('systemctl --user start ollama', 'Start Ollama service');
+        await this.execAsync(
+          'systemctl --user start ollama',
+          'Start Ollama service'
+        );
 
         this.logger.debug('Verifying Ollama service startup...');
         const isStarted = await this.checkOllamaApi();
 
         if (!isStarted) {
-          this.logger.error('Ollama service failed to start after installation.');
+          this.logger.error(
+            'Ollama service failed to start after installation.'
+          );
           throw new Error('Ollama service failed to start.');
         }
 
@@ -56,7 +76,9 @@ export class OllamaInstallerService {
       const isModelPulled = await this.checkModelExists(model);
 
       if (isModelPulled) {
-        this.logger.warn(`Model ${model} is already installed. Skipping download.`);
+        this.logger.warn(
+          `Model ${model} is already installed. Skipping download.`
+        );
         return 'already installed';
       }
 
@@ -69,7 +91,10 @@ export class OllamaInstallerService {
       return 'downloaded successfully';
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Installation failed for model ${model}: ${message}`, error instanceof Error ? error.stack : undefined);
+      this.logger.error(
+        `Installation failed for model ${model}: ${message}`,
+        error instanceof Error ? error.stack : undefined
+      );
       throw new Error(`Ollama installation or model pull failed: ${message}`);
     }
   }
@@ -88,7 +113,9 @@ export class OllamaInstallerService {
         return true;
       }
 
-      this.logger.debug(`Ollama API returned non-200 status: ${response.status}`);
+      this.logger.debug(
+        `Ollama API returned non-200 status: ${response.status}`
+      );
 
       return false;
     } catch (error) {
@@ -113,7 +140,9 @@ export class OllamaInstallerService {
 
       const exists = models.includes(model);
 
-      this.logger.debug(`Model ${model} ${exists ? 'found' : 'not found'} in installed models.`);
+      this.logger.debug(
+        `Model ${model} ${exists ? 'found' : 'not found'} in installed models.`
+      );
 
       return exists;
     } catch (error) {
@@ -141,7 +170,10 @@ export class OllamaInstallerService {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
 
-      this.logger.error(`Command execution failed for ${context}: ${message}`, error instanceof Error ? error.stack : undefined);
+      this.logger.error(
+        `Command execution failed for ${context}: ${message}`,
+        error instanceof Error ? error.stack : undefined
+      );
 
       throw error;
     }

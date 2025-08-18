@@ -1,15 +1,13 @@
+import { TelegrafExceptionFilter } from '../common/telegraf-exception.filter';
 import { InlineKeyboardMarkup } from 'telegraf/typings/core/types/typegram';
-import { BOT_COMMANDS, WIZARD_SCENE_IDS } from '../../constants';
+import { BOT_COMMANDS, WIZARD_SCENE_IDS } from '../constants';
 import { Wizard, WizardStep, Ctx, On } from 'nestjs-telegraf';
-import { TelegrafExceptionFilter } from '../../common';
 import { Logger, UseFilters } from '@nestjs/common';
-import { WizardContext } from '../../interfaces';
+import { WizardContext } from '../types';
 
 @Wizard(WIZARD_SCENE_IDS.HELPER_SCENE)
 export class HelperWizard {
-  private readonly logger: Logger = new Logger(HelperWizard.name);
-
-  constructor() {}
+  private readonly logger = new Logger(HelperWizard.name);
 
   @WizardStep(1)
   @UseFilters(TelegrafExceptionFilter)
@@ -17,12 +15,12 @@ export class HelperWizard {
     this.logger.log('Entering help wizard: Displaying command list');
 
     const commandsList = Object.values(BOT_COMMANDS)
-      .map((cmd) => `${cmd.emoji} **${cmd.name}**: ${cmd.description}`)
+      .map(cmd => `${cmd.emoji} **${cmd.name}**: ${cmd.description}`)
       .join('\n\n');
 
     const keyboard: InlineKeyboardMarkup = {
       inline_keyboard: [
-        ...Object.values(BOT_COMMANDS).map((cmd) => [
+        ...Object.values(BOT_COMMANDS).map(cmd => [
           {
             text: `${cmd.emoji} ${cmd.name}`,
             callback_data: `cmd_${cmd.name.slice(1)}`,
@@ -38,7 +36,7 @@ export class HelperWizard {
       {
         parse_mode: 'Markdown',
         reply_markup: keyboard,
-      },
+      }
     );
 
     ctx.wizard.next();
@@ -49,7 +47,7 @@ export class HelperWizard {
   @UseFilters(TelegrafExceptionFilter)
   async onCommandSelected(
     @Ctx()
-    ctx: WizardContext & { wizard: { state: { selectedCommand?: string } } },
+    ctx: WizardContext & { wizard: { state: { selectedCommand?: string } } }
   ): Promise<void> {
     this.logger.log('Processing command selection');
 
@@ -66,7 +64,7 @@ export class HelperWizard {
     if (data === 'done') {
       this.logger.log('User chose to exit help wizard');
       await ctx.reply(
-        '🎉 Thanks for exploring! Use /start to configure your AI or /tune to set up your browser.',
+        '🎉 Thanks for exploring! Use /start to configure your AI or /tune to set up your browser.'
       );
       await ctx.scene.leave();
       return;
@@ -74,7 +72,7 @@ export class HelperWizard {
 
     const commandKey = data.replace('cmd_', '');
     const command = Object.values(BOT_COMMANDS).find(
-      (cmd) => cmd.name.slice(1) === commandKey,
+      cmd => cmd.name.slice(1) === commandKey
     );
 
     if (!command) {
@@ -103,7 +101,7 @@ export class HelperWizard {
             [{ text: '🏁 Done', callback_data: 'done' }],
           ],
         },
-      },
+      }
     );
 
     ctx.wizard.next();
@@ -114,7 +112,7 @@ export class HelperWizard {
   @UseFilters(TelegrafExceptionFilter)
   async onActionSelected(
     @Ctx()
-    ctx: WizardContext & { wizard: { state: { selectedCommand?: string } } },
+    ctx: WizardContext & { wizard: { state: { selectedCommand?: string } } }
   ): Promise<void> {
     this.logger.log('Processing action selection');
 
@@ -131,7 +129,7 @@ export class HelperWizard {
     if (data === 'done') {
       this.logger.log('User chose to exit help wizard');
       await ctx.reply(
-        '🎉 Help session complete! Use /help anytime to explore commands.',
+        '🎉 Help session complete! Use /help anytime to explore commands.'
       );
       await ctx.scene.leave();
       return;
@@ -157,7 +155,7 @@ export class HelperWizard {
       const sceneId = sceneMap[commandKey];
       if (sceneId) {
         this.logger.log(
-          `Redirecting to scene: ${sceneId} for command: /${commandKey}`,
+          `Redirecting to scene: ${sceneId} for command: /${commandKey}`
         );
         await ctx.reply(`🚀 Running ${commandKey}...`);
         await ctx.scene.enter(sceneId);

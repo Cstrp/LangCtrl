@@ -3,11 +3,10 @@ import path from 'path';
 export const CONFIG_PATH = path.join(process.cwd(), '.config', 'settings.json');
 
 export const WIZARD_SCENE_IDS = {
-  SETTINGS_SCENE: 'SETTINGS_WIZARD_SCENE',
   GREETER_SCENE: 'GREETER_WIZARD_SCENE',
-  REPORT_SCENE: 'REPORT_WIZARD_SCENE',
   HELPER_SCENE: 'HELPER_WIZARD_SCENE',
   TUNE_SCENE: 'TUNE_WIZARD_SCENE',
+  REPORT_SCENE: 'REPORT_WIZARD_SCENE',
 } as const;
 
 export const BOT_COMMANDS = {

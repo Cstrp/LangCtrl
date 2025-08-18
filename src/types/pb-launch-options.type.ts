@@ -3,6 +3,7 @@ import { chromium } from 'playwright-extra';
 export type PlaywrightLaunchOptions = Parameters<typeof chromium.launch>[0];
 
 export type AdvancedLaunchOptions = {
+  browserName?: string;
   enableStealth?: boolean;
   wsEndpoint?: string;
   takeInitialScreenshot?: boolean;

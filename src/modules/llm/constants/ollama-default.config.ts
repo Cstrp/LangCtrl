@@ -12,10 +12,8 @@ import { LLMConfig } from '../interfaces';
  *  - maxConcurrency: number. Max concurrent model invocations.
  *
  * Example/local model names frequently used with Ollama (verify locally):
- *  - 'llama2-13b'            (Llama 2 family, 13B weights)
- *  - 'llama2-70b'            (Larger model for higher quality)
- *  - 'vicuna-13b'            (Fine-tuned instruction-following variant)
- *  - 'alpaca-native-7b'      (Smaller, fast local model)
+ *  - 'deepseek-r1:1.5b'
+ *  - 'qwen3:0.6b'
  *
  * Note: Ollama runs models locally or from a local registry — names vary by
  * what you've pulled. Always run `ollama list` to see installed models.

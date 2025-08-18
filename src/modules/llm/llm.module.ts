@@ -1,5 +1,6 @@
 import { BullModule } from '@nestjs/bullmq';
 import { LLMService } from './llm.service';
+import { FileWatcherService } from '../fw';
 import { QUEUE_NAMES } from '@/constants';
 import { Module } from '@nestjs/common';
 
@@ -9,7 +10,7 @@ import { Module } from '@nestjs/common';
       name: QUEUE_NAMES.LLM_QUEUE,
     }),
   ],
-  providers: [LLMService],
+  providers: [LLMService, FileWatcherService],
   exports: [LLMService],
 })
 export class LLMModule {}

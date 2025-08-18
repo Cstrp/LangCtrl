@@ -1,10 +1,10 @@
+import { OllamaInstallerService } from '../services/ollama-installer.service';
+import { TelegrafExceptionFilter } from '../common/telegraf-exception.filter';
 import { InlineKeyboardMarkup } from 'telegraf/typings/core/types/typegram';
 import { Ctx, Message, On, Wizard, WizardStep } from 'nestjs-telegraf';
-import { OllamaInstallerService } from '../../ollama-installer';
-import { BOT_COMMANDS, CONFIG_PATH, WIZARD_SCENE_IDS } from '../../constants';
-import { TelegrafExceptionFilter } from '../../common';
+import { CONFIG_PATH, WIZARD_SCENE_IDS } from '../constants';
 import { Logger, UseFilters } from '@nestjs/common';
-import { WizardContext } from '../../interfaces';
+import { WizardContext } from '../types';
 import * as fs from 'fs/promises';
 import { sleep } from '@/utils';
 import * as path from 'path';
@@ -14,7 +14,7 @@ export class GreeterWizard {
   private readonly logger = new Logger(GreeterWizard.name);
   private readonly configPath = CONFIG_PATH;
 
-  private readonly providers = [
+  private readonly providers: { key: string; label: string }[] = [
     { key: 'provider_openai', label: '🤖 OpenAI' },
     { key: 'provider_google', label: '🔍 Google' },
     { key: 'provider_ollama', label: '🦙 Ollama' },
@@ -32,7 +32,6 @@ export class GreeterWizard {
     this.logger.log('🛠 Step 1 — Selecting provider');
 
     await ctx.telegram.sendChatAction(chat.id, 'typing');
-
     await sleep(800);
 
     await ctx.reply(
@@ -41,7 +40,7 @@ export class GreeterWizard {
       {
         parse_mode: 'Markdown',
         reply_markup: this.providerKeyboard(),
-      },
+      }
     );
 
     ctx.wizard.next();
@@ -51,12 +50,11 @@ export class GreeterWizard {
   @WizardStep(2)
   @UseFilters(TelegrafExceptionFilter)
   public async onProviderSelected(
-    @Ctx() ctx: WizardContext & { wizard: { state: { provider?: string } } },
+    @Ctx() ctx: WizardContext & { wizard: { state: { provider?: string } } }
   ) {
     if (!ctx.chat) return;
 
     const chat = ctx.chat;
-
     this.logger.log('🛠 Step 2 — Processing provider selection');
 
     const callbackQuery = ctx.callbackQuery;
@@ -67,25 +65,21 @@ export class GreeterWizard {
     }
 
     const providerKey = callbackQuery.data;
-
     ctx.wizard.state.provider = providerKey;
 
     await ctx.answerCbQuery();
-
     await ctx.telegram.sendChatAction(chat.id, 'typing');
-
     await sleep(600);
 
     await ctx.reply(
       `✅ You selected: *${this.formatProviderName(providerKey)}*`,
-      { parse_mode: 'Markdown' },
+      { parse_mode: 'Markdown' }
     );
 
     await sleep(800);
 
     if (['provider_openai', 'provider_google'].includes(providerKey)) {
       await ctx.telegram.sendChatAction(chat.id, 'typing');
-
       await sleep(600);
 
       await ctx.reply('🔑 Please enter your *API key* for this provider:', {
@@ -96,7 +90,6 @@ export class GreeterWizard {
     } else {
       try {
         await this.saveSettings({ provider: providerKey.split('_').pop() });
-
         this.logger.log(`💾 Provider ${providerKey} saved`);
 
         await ctx.reply('🔑 Please enter your *Ollama model*:', {
@@ -106,7 +99,6 @@ export class GreeterWizard {
         ctx.wizard.selectStep(3);
       } catch (error) {
         this.logger.error('❌ Error saving provider', error);
-
         await ctx.reply('⚠️ Failed to save your selection. Please try again.');
       }
     }
@@ -120,12 +112,11 @@ export class GreeterWizard {
     ctx: WizardContext & {
       wizard: { state: { provider: string; apiKey?: string } };
     },
-    @Message() msg: { text: string },
+    @Message() msg: { text: string }
   ) {
     if (!ctx.chat) return;
 
     const chat = ctx.chat;
-
     this.logger.log('🛠 Step 3 — Entering API key');
 
     const apiKey = msg.text.trim();
@@ -138,7 +129,7 @@ export class GreeterWizard {
       });
 
       this.logger.log(
-        `💾 Provider ${ctx.wizard.state.provider} and API key saved`,
+        `💾 Provider ${ctx.wizard.state.provider} and API key saved`
       );
 
       await ctx.telegram.sendChatAction(chat.id, 'typing');
@@ -148,7 +139,6 @@ export class GreeterWizard {
       await sleep(800);
 
       ctx.wizard.selectStep(4);
-
       await sleep(800);
 
       await this.onAvailableCommands(ctx);
@@ -166,7 +156,7 @@ export class GreeterWizard {
     ctx: WizardContext & {
       wizard: { state: { provider: string; model?: string } };
     },
-    @Message() msg: { text: string },
+    @Message() msg: { text: string }
   ) {
     if (!ctx.chat) return;
 
@@ -199,7 +189,7 @@ export class GreeterWizard {
       await sleep(1000);
       await ctx.reply(
         `🎉 Model *${model}* ${result ?? 'installed successfully!'}`,
-        { parse_mode: 'Markdown' },
+        { parse_mode: 'Markdown' }
       );
 
       ctx.wizard.selectStep(4);
@@ -208,7 +198,7 @@ export class GreeterWizard {
     } catch (error) {
       this.logger.error('❌ Error saving or installing Ollama model', error);
       await ctx.reply(
-        '⚠️ Failed to save or install the model. Please try again.',
+        '⚠️ Failed to save or install the model. Please try again.'
       );
     }
   }
@@ -216,77 +206,30 @@ export class GreeterWizard {
   @WizardStep(5)
   @UseFilters(TelegrafExceptionFilter)
   public async onAvailableCommands(@Ctx() ctx: WizardContext) {
-    if (!ctx.chat) {
-      this.logger.warn('No chat context available');
-      return;
-    }
+    if (!ctx.chat) return;
 
     const chat = ctx.chat;
-    this.logger.log('🛠 Step 5 — Displaying available commands');
+    this.logger.log('🛠 Step 5 — Showing available commands');
 
     await ctx.telegram.sendChatAction(chat.id, 'typing');
     await sleep(800);
 
-    const commandsList = Object.values(BOT_COMMANDS)
-      .map((cmd) => `${cmd.emoji} **${cmd.name}**: ${cmd.description}`)
-      .join('\n\n');
+    const commands = await ctx.telegram.getMyCommands();
 
     await ctx.reply(
-      `🎉 *Setup complete!* Your bot is ready to go!\n\n` +
-        `📜 *Available commands:*\n\n` +
-        `${commandsList}\n\n` +
-        `Try one of these commands to continue, or use **/help** for more details!`,
+      '🎉 Setup complete! You can now use the bot.\n\n' +
+        '📜 *Available commands:*\n\n',
       {
         parse_mode: 'Markdown',
         reply_markup: {
-          inline_keyboard: [
-            [
-              { text: '🚀 Start Over', callback_data: 'restart' },
-              { text: '🏁 Done', callback_data: 'done' },
-            ],
-          ],
+          inline_keyboard: commands.map(cmd => [
+            { text: `${cmd.command}`, callback_data: cmd.command },
+          ]),
         },
-      },
+      }
     );
 
-    ctx.wizard.next();
-  }
-
-  @On('callback_query')
-  @WizardStep(6)
-  @UseFilters(TelegrafExceptionFilter)
-  public async onActionSelected(@Ctx() ctx: WizardContext): Promise<void> {
-    if (!ctx.chat) {
-      this.logger.warn('No chat context available');
-      return;
-    }
-
-    const callbackQuery = ctx.callbackQuery;
-    if (!callbackQuery || !('data' in callbackQuery)) {
-      this.logger.warn('No callback data received');
-      await ctx.reply('⚠️ Error: No action selected. Please try again.');
-      return;
-    }
-
-    const data = callbackQuery.data;
-    await ctx.answerCbQuery();
-
-    if (data === 'done') {
-      this.logger.log('User chose to exit GreeterWizard');
-      await ctx.reply('🎉 Thanks for setting up! Use any command to continue.');
-      await ctx.scene.leave();
-      return;
-    }
-
-    if (data === 'restart') {
-      this.logger.log('User chose to restart configuration');
-      await ctx.reply('🚀 Restarting configuration...');
-      await ctx.scene.enter(WIZARD_SCENE_IDS.GREETER_SCENE);
-      return;
-    }
-
-    this.logger.warn(`Invalid action selected: ${data}`);
-    await ctx.reply('⚠️ Error: Unknown action.');
+    await ctx.scene.leave();
   }
 
   private async saveSettings(settings: Record<string, unknown>): Promise<void> {
@@ -303,13 +246,13 @@ export class GreeterWizard {
 
   private providerKeyboard(): InlineKeyboardMarkup {
     return {
-      inline_keyboard: this.providers.map((p) => [
+      inline_keyboard: this.providers.map(p => [
         { text: p.label, callback_data: p.key },
       ]),
     };
   }
 
   private formatProviderName(key: string): string {
-    return this.providers.find((p) => p.key === key)?.label || key;
+    return this.providers.find(p => p.key === key)?.label || key;
   }
 }

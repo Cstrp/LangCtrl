@@ -59,6 +59,9 @@ importers:
       bullmq:
         specifier: ^5.58.0
         version: 5.58.0
+      chokidar:
+        specifier: ^4.0.3
+        version: 4.0.3
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -86,6 +89,9 @@ importers:
       module-alias:
         specifier: ^2.2.3
         version: 2.2.3
+      nestjs-cls:
+        specifier: ^6.0.1
+        version: 6.0.1(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       nestjs-telegraf:
         specifier: 2.9.1
         version: 2.9.1(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(reflect-metadata@0.2.2)(telegraf@4.16.3)(typescript@5.9.2)
@@ -4011,6 +4017,15 @@ packages:
 
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
+
+  nestjs-cls@6.0.1:
+    resolution: {integrity: sha512-FnU8MI5/RKdbNvGmlUMD7nuFs7zUiueNzTjO+sxj7BJbsf7cUmosarppPLXRJ7C1WaZ/gLE9ZAcM6//0q1CQIA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@nestjs/common': '>= 10 < 12'
+      '@nestjs/core': '>= 10 < 12'
+      reflect-metadata: '*'
+      rxjs: '>= 7'
 
   nestjs-telegraf@2.9.1:
     resolution: {integrity: sha512-iFy0beaRvEJWo4rtIfLK6mbrxlrhPsDKoXT/yyQDRfu9lmFKjada4bbR3COXua6VdbMd/NXIzMqSukJRsTkIjQ==}
@@ -9428,6 +9443,13 @@ snapshots:
   negotiator@1.0.0: {}
 
   neo-async@2.6.2: {}
+
+  nestjs-cls@6.0.1(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(reflect-metadata@0.2.2)(rxjs@7.8.2):
+    dependencies:
+      '@nestjs/common': 11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core': 11.1.6(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.6)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      reflect-metadata: 0.2.2
+      rxjs: 7.8.2
 
   nestjs-telegraf@2.9.1(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(reflect-metadata@0.2.2)(telegraf@4.16.3)(typescript@5.9.2):
     dependencies:

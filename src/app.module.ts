@@ -1,11 +1,19 @@
-import { TelegramModule, PlaywrightModule } from '@/modules';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ENV_VARS, ENV_VARS_DEFAULTS } from '@/constants';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
+import { ClsModule } from 'nestjs-cls';
+
+import {
+  TelegramModule,
+  PlaywrightModule,
+  FileWatcherModule,
+  LLMModule,
+} from '@/modules';
 
 @Module({
   imports: [
+    ClsModule.forRoot({ global: true, middleware: { mount: true } }),
     ConfigModule.forRoot({ isGlobal: true }),
     BullModule.forRootAsync({
       inject: [ConfigService],
@@ -13,11 +21,11 @@ import { Module } from '@nestjs/common';
         connection: {
           host: cfg.get<string>(
             ENV_VARS.BULLMQ_HOST,
-            String(ENV_VARS_DEFAULTS[ENV_VARS.BULLMQ_HOST]),
+            String(ENV_VARS_DEFAULTS[ENV_VARS.BULLMQ_HOST])
           ),
           port: cfg.get<number>(
             ENV_VARS.BULLMQ_PORT,
-            Number(ENV_VARS_DEFAULTS[ENV_VARS.BULLMQ_PORT]),
+            Number(ENV_VARS_DEFAULTS[ENV_VARS.BULLMQ_PORT])
           ),
         },
         defaultJobOptions: {
@@ -32,8 +40,10 @@ import { Module } from '@nestjs/common';
         },
       }),
     }),
+    FileWatcherModule,
     PlaywrightModule,
     TelegramModule,
+    LLMModule,
   ],
 })
 export class AppModule {
